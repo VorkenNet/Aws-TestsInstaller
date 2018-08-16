@@ -48,15 +48,15 @@ for i in {1..50}; do
     PRIMARY KEY  (Id)
   ) ;"
 done;
-# Inserisce le prime 100 entries per ogni tabella
+# Inserisce le prime 10 entries per ogni tabella
 for i in {1..50}; do
-  for x in {1..50}; do mysql -u root -ptest01 -Bse "INSERT INTO myTestDB$i.myTable (Id, myTimeStamp, rand) VALUES (NULL, CURRENT_TIMESTAMP, '$RANDOM');"; done
+  for x in {1..10}; do mysql -u root -ptest01 -Bse "INSERT INTO myTestDB$i.myTable (Id, myTimeStamp, rand) VALUES (NULL, CURRENT_TIMESTAMP, '$RANDOM');"; done
 done
 #
 # Crea i Cron
 #
 for i in {1..50}; do
-  echo "for i in {1..100}; do mysql -u root -ptest01 -Bse \"INSERT INTO myTestDB$i.myTable (Id, myTimeStamp, rand) VALUES (NULL, CURRENT_TIMESTAMP, '\$RANDOM');\"; done" | sudo tee -a /home/ec2-user/myTestCron$i.sh
+  echo "for i in {1..50}; do mysql -u root -ptest01 -Bse \"INSERT INTO myTestDB$i.myTable (Id, myTimeStamp, rand) VALUES (NULL, CURRENT_TIMESTAMP, '\$RANDOM');\"; done" | sudo tee -a /home/ec2-user/myTestCron$i.sh
   echo "mysql -u root -ptest01 -Bse \"delete from myTestDB$i.myTable order by Id asc limit 50\"" | sudo tee -a /home/ec2-user/myTestCron$i.sh
 done
 #
