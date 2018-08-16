@@ -19,6 +19,8 @@ sudo chown -R mysql:mysql /var/lib/mysql
 sudo mysql_install_db
 # Attiva il servizio Mysql
 sudo systemctl start mariadb
+# Attiva MariaDB al boot
+sudo systemctl enable mariadb
 # Make sure that NOBODY can access the server without a password
 mysql -e "UPDATE mysql.user SET Password = PASSWORD('test01') WHERE User = 'root'"
 # Kill the anonymous users
@@ -31,17 +33,14 @@ mysql -e "DROP DATABASE test"
 mysql -e "FLUSH PRIVILEGES"
 # Any subsequent tries to run queries this way will get access denied because lack of usr/pwd param
 #
-# Crea e configura 10 DB per il Test
-#
-#
 # Crea e configura il DB per il Test
 #
-# Crea 100 DB
-for i in {1..100}; do
+# Crea 50 DB
+for i in {1..50}; do
    mysql -u root -ptest01 -Bse "CREATE DATABASE IF NOT EXISTS myTestDB$i CHARACTER SET utf8 COLLATE utf8_unicode_ci;"
 done
 # Crea la Tabelle
-for i in {1..100}; do
+for i in {1..50}; do
   mysql -u root -ptest01 -Bse "CREATE TABLE IF NOT EXISTS myTestDB$i.myTable(
     Id int(11) NOT NULL auto_increment,
     myTimeStamp timestamp NOT NULL default CURRENT_TIMESTAMP on update CURRENT_TIMESTAMP,
@@ -50,22 +49,22 @@ for i in {1..100}; do
   ) ;"
 done;
 # Inserisce le prime 100 entries per ogni tabella
-for i in {1..100}; do
-  for x in {1..100}; do mysql -u root -ptest01 -Bse "INSERT INTO myTestDB$i.myTable (Id, myTimeStamp, rand) VALUES (NULL, CURRENT_TIMESTAMP, '$RANDOM');"; done
+for i in {1..50}; do
+  for x in {1..50}; do mysql -u root -ptest01 -Bse "INSERT INTO myTestDB$i.myTable (Id, myTimeStamp, rand) VALUES (NULL, CURRENT_TIMESTAMP, '$RANDOM');"; done
 done
 #
 # Crea i Cron
 #
-for i in {1..100}; do
+for i in {1..50}; do
   echo "for i in {1..100}; do mysql -u root -ptest01 -Bse \"INSERT INTO myTestDB$i.myTable (Id, myTimeStamp, rand) VALUES (NULL, CURRENT_TIMESTAMP, '\$RANDOM');\"; done" | sudo tee -a /home/ec2-user/myTestCron$i.sh
-  echo "mysql -u root -ptest01 -Bse \"delete from myTestDB$i.myTable order by Id asc limit 100\"" | sudo tee -a /home/ec2-user/myTestCron$i.sh
+  echo "mysql -u root -ptest01 -Bse \"delete from myTestDB$i.myTable order by Id asc limit 50\"" | sudo tee -a /home/ec2-user/myTestCron$i.sh
 done
 #
 # Attiva il Cron
 #
 #write out current crontab
 sudo crontab -l | sudo tee -a mycron
-for i in {1..100}; do
+for i in {1..50}; do
   # echo new cron into cron file
   echo " * * * * * sh /home/ec2-user/myTestCron$i.sh" | sudo tee -a mycron
 done
