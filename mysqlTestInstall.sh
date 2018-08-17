@@ -35,13 +35,13 @@ mysql -e "FLUSH PRIVILEGES"
 #
 # Crea e configura il DB per il Test
 #
-echo "> Creating DataBases\n"
+echo "> Creating DataBases"
 # Crea 25 DB
 for i in {1..25}; do
    mysql -u root -ptest01 -Bse "CREATE DATABASE IF NOT EXISTS myTestDB$i CHARACTER SET utf8 COLLATE utf8_unicode_ci;"
 done
 # Crea la Tabelle
-echo "> Creating Tables\n"
+echo "> Creating Tables"
 for i in {1..25}; do
   mysql -u root -ptest01 -Bse "CREATE TABLE IF NOT EXISTS myTestDB$i.myTable(
     Id int(11) NOT NULL auto_increment,
@@ -51,14 +51,14 @@ for i in {1..25}; do
   ) ;"
 done;
 # Inserisce le prime 10 entries per ogni tabella
-echo "> Populating Tables\n"
+echo "> Populating Tables"
 for i in {1..25}; do
   for x in {1..10}; do mysql -u root -ptest01 -Bse "INSERT INTO myTestDB$i.myTable (Id, myTimeStamp, rand) VALUES (NULL, CURRENT_TIMESTAMP, '$RANDOM');"; done
 done
 #
 # Crea i Cron
 #
-echo "> Creating Cron\n"
+echo "> Creating Cron"
 for i in {1..25}; do
   echo "for i in {1..25}; do mysql -u root -ptest01 -Bse \"INSERT INTO myTestDB$i.myTable (Id, myTimeStamp, rand) VALUES (NULL, CURRENT_TIMESTAMP, '\$RANDOM');\"; done" | sudo tee -a /home/ec2-user/myTestCron$i.sh > /dev/null
   echo "mysql -u root -ptest01 -Bse \"delete from myTestDB$i.myTable order by Id asc limit 25\"" | sudo tee -a /home/ec2-user/myTestCron$i.sh > /dev/null
@@ -66,7 +66,7 @@ done
 #
 # Attiva il Cron
 #
-echo "> Activating Cron\n"
+echo "> Activating Cron"
 #write out current crontab
 sudo crontab -l | sudo tee -a mycron > /dev/null
 for i in {1..25}; do
@@ -76,4 +76,4 @@ done
 #install new cron file
 sudo crontab mycron
 sudo rm -f mycron
-echo "> Done!\n"
+echo "> Done!"
