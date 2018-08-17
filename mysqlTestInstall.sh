@@ -12,7 +12,7 @@ sudo mount /var/lib/mysql
 # Installa MariaDB via Yum
 sudo yum install mariadb-server -y
 # Crea i file di mysql
-mkdir /var/lib/mysql/mysql
+sudo mysql_install_db
 # Modifica i permessi sui file crati
 sudo chown -R mysql:mysql /var/lib/mysql
 # Finisce l'installazione utilizzando i permessi corretti
