@@ -6,13 +6,13 @@ sudo mkfs -t ext4 /dev/xvdb
 # Crea la directory per il mountPoint
 mkdir /var/lib/mysql
 # Modifica il file Fstab
-echo /dev/xvdb /var/lib/mysql ext4 noatime 0 0 | sudo tee -a /etc/fstab
+echo /dev/xvdb /var/lib/mysql ext4 noatime 0 0 | sudo tee -a /etc/fstab > /dev/null
 # Monta la partizione
 sudo mount /var/lib/mysql
 # Installa MariaDB via Yum
 sudo yum install mariadb-server -y
 # Crea i file di mysql
-sudo mysql_install_db
+mkdir /var/lib/mysql/mysql
 # Modifica i permessi sui file crati
 sudo chown -R mysql:mysql /var/lib/mysql
 # Finisce l'installazione utilizzando i permessi corretti
@@ -35,12 +35,14 @@ mysql -e "FLUSH PRIVILEGES"
 #
 # Crea e configura il DB per il Test
 #
-# Crea 50 DB
-for i in {1..50}; do
+echo "> Creating DataBases\n"
+# Crea 25 DB
+for i in {1..25}; do
    mysql -u root -ptest01 -Bse "CREATE DATABASE IF NOT EXISTS myTestDB$i CHARACTER SET utf8 COLLATE utf8_unicode_ci;"
 done
 # Crea la Tabelle
-for i in {1..50}; do
+echo "> Creating Tables\n"
+for i in {1..25}; do
   mysql -u root -ptest01 -Bse "CREATE TABLE IF NOT EXISTS myTestDB$i.myTable(
     Id int(11) NOT NULL auto_increment,
     myTimeStamp timestamp NOT NULL default CURRENT_TIMESTAMP on update CURRENT_TIMESTAMP,
@@ -49,25 +51,29 @@ for i in {1..50}; do
   ) ;"
 done;
 # Inserisce le prime 10 entries per ogni tabella
-for i in {1..50}; do
+echo "> Populating Tables\n"
+for i in {1..25}; do
   for x in {1..10}; do mysql -u root -ptest01 -Bse "INSERT INTO myTestDB$i.myTable (Id, myTimeStamp, rand) VALUES (NULL, CURRENT_TIMESTAMP, '$RANDOM');"; done
 done
 #
 # Crea i Cron
 #
-for i in {1..50}; do
-  echo "for i in {1..50}; do mysql -u root -ptest01 -Bse \"INSERT INTO myTestDB$i.myTable (Id, myTimeStamp, rand) VALUES (NULL, CURRENT_TIMESTAMP, '\$RANDOM');\"; done" | sudo tee -a /home/ec2-user/myTestCron$i.sh
-  echo "mysql -u root -ptest01 -Bse \"delete from myTestDB$i.myTable order by Id asc limit 50\"" | sudo tee -a /home/ec2-user/myTestCron$i.sh
+echo "> Creating Cron\n"
+for i in {1..25}; do
+  echo "for i in {1..25}; do mysql -u root -ptest01 -Bse \"INSERT INTO myTestDB$i.myTable (Id, myTimeStamp, rand) VALUES (NULL, CURRENT_TIMESTAMP, '\$RANDOM');\"; done" | sudo tee -a /home/ec2-user/myTestCron$i.sh > /dev/null
+  echo "mysql -u root -ptest01 -Bse \"delete from myTestDB$i.myTable order by Id asc limit 25\"" | sudo tee -a /home/ec2-user/myTestCron$i.sh > /dev/null
 done
 #
 # Attiva il Cron
 #
+echo "> Activating Cron\n"
 #write out current crontab
-sudo crontab -l | sudo tee -a mycron
-for i in {1..50}; do
+sudo crontab -l | sudo tee -a mycron > /dev/null
+for i in {1..25}; do
   # echo new cron into cron file
-  echo " * * * * * sh /home/ec2-user/myTestCron$i.sh" | sudo tee -a mycron
+  echo " * * * * * sh /home/ec2-user/myTestCron$i.sh" | sudo tee -a mycron > /dev/null
 done
 #install new cron file
 sudo crontab mycron
 sudo rm -f mycron
+echo "> Done!\n"
